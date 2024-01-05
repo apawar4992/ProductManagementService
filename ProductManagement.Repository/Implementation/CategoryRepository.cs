@@ -5,6 +5,9 @@ using ProductManagement.Repository.Models;
 
 namespace ProductManagement.Repository
 {
+    /// <summary>
+    /// Represents category repository.
+    /// </summary>
     public class CategoryRepository : ICategoryRepository
     {
         public readonly ILogger<CategoryRepository> _logger;
@@ -13,32 +16,27 @@ namespace ProductManagement.Repository
             _logger = logger;
         }
 
+        /// <inheritdoc>
         public async Task<List<Category>> GetCategories()
         {
             List<Category> categories = new List<Category>();
-            try
+            List<CategoryRecord> categoryRecords;
+            using (ProductManagementSystemContext context = new ProductManagementSystemContext())
             {
-                List<CategoryRecord> categoryRecords;
-                using (ProductManagementSystemContext context = new ProductManagementSystemContext())
-                {
-                    categoryRecords = await context.Categories.ToListAsync();
-                }
-
-                if (categoryRecords != null)
-                {
-                    categoryRecords.ForEach(item =>
-                    {
-                        categories.Add(new Category()
-                        {
-                            Name = item.Name,
-                            Id = item.Id,
-                        });
-                    });
-                }
+                categoryRecords = await context.Categories.ToListAsync();
             }
-            catch (Exception ex)
+
+            if (categoryRecords != null)
             {
-                _logger.LogError($"Exception occoured in category repository:" + ex.Message, ex);
+                _logger.LogInformation($"Reteieved {categoryRecords.Count()} : categories from database.");
+                categoryRecords.ForEach(item =>
+                {
+                    categories.Add(new Category()
+                    {
+                        Name = item.Name,
+                        Id = item.Id,
+                    });
+                });
             }
 
             return categories;

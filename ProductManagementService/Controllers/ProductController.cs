@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using ProductManagement.Manager;
 using ProductManagement.Models;
 
 namespace ProductManagementService.Controllers
 {
+    /// <summary>
+    /// Product controller class representing CURD operations.
+    /// </summary>
     [ApiController]
     [Route("api/products")]
     public class ProductController : ControllerBase
@@ -12,84 +14,96 @@ namespace ProductManagementService.Controllers
         public readonly ILogger<ProductController> _logger;
         public readonly IProductManager _productManager;
 
+        /// <summary>
+        /// Product controller constructor.
+        /// </summary>
+        /// <param name="productManager">The product manager.</param>
+        /// <param name="logger">The logger instance.</param>
         public ProductController(IProductManager productManager, ILogger<ProductController> logger)
         {
             _logger = logger;
             _productManager = productManager;
         }
 
+        /// <summary>
+        /// Method to get all products.
+        /// </summary>
+        /// <returns>The action result of products.</returns>
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            List<Product> products = await _productManager.GetProducts();
+            if (products != null && products.Any())
+                _logger.LogInformation($"The products found.");
+
+            return Ok(products);
+        }
+
+        /// <summary>
+        /// Method to get products according to specified sub category identifier.
+        /// </summary>
+        /// <param name="subCategoryId">The sub category identifier.</param>
+        /// <returns>The action result of products.</returns>
         [HttpGet]
         [Route("{subCategoryId:int}")]
-        public async Task<IActionResult> GetAsync(int subCategoryId)
+        public async Task<IActionResult> Get(int subCategoryId)
         {
             List<Product> products;
             if (subCategoryId <= 0)
             {
-                _logger.LogWarning("SubCategory identifier value should be greater than zero.");
-                throw new Exception();
+                _logger.LogError(Constants.INVALIDSUBCATEGORYEXCEPTIONMESSAGE);
+                throw new InvalidSubCategoryIdentifierException();
             }
 
             // call
-            products = await _productManager.GetProducts(subCategoryId);
-            if (products != null && products.Any())
-            {
-                _logger.LogInformation($"The products for specified sub category identifier: {subCategoryId} found");
-                return Ok(products);
-            }
-            else
-            {
-                _logger.LogInformation($"The products for specified sub category identifier: {subCategoryId} not found");
-                return Ok();
-            }
+            products = await _productManager.GetProductsBySubCategoryId(subCategoryId);
+
+            var message = products != null && products.Count() > 0
+                        ? string.Format($"The products for specified sub category identifier: {subCategoryId} found")
+                        : string.Format($"The products for specified sub category identifier: {subCategoryId} not found");
+            _logger.LogInformation(message);
+            return Ok(products);
         }
 
+        /// <summary>
+        /// Method to add product.
+        /// </summary>
+        /// <param name="product">The product.</param>
+        /// <returns>The action result of is added.</returns>
         [HttpPost]
-        public IActionResult Add(Product product)
+        public async Task<IActionResult> Add(Product product)
         {
-            //try
-            //{
-            return Ok();
-            //}
-            //catch (Exception)
-            //{
-            //    _logger.Log(LogLevel.Error, "Exception occoured in Get products");
-            //}
-        }
-
-        [HttpPut]
-        //[Route("{subCategoryId:int}")]
-        [Route("{productCode}")]
-        public IActionResult Update([FromBody] Product product, [FromQuery]string productCode)
-        {
-            //try
-            //{
-
-            //}
-            //catch (Exception)
-            //{
-            //    _logger.Log(LogLevel.Error, "Exception occoured in Get products");
-            //}
-
-            return Ok();
-        }
-
-        [HttpDelete]
-        [Route("{productCode}")]
-        public IActionResult Delete(string productCode)
-        {
-            //try
-            //{
-            if (productCode.IsNullOrEmpty())
+            if (product == null)
             {
-                return BadRequest();
+                _logger.LogError(Constants.INVALIDINPUTPARAMETER);
+                throw new ArgumentNullException();
             }
-            //}
-            //catch (Exception)
-            //{
-            //    _logger.Log(LogLevel.Error, "Exception occoured in Get products");
-            //}
 
-            return Ok();
+            var isAdded = await _productManager.AddProduct(product);
+            _logger.LogInformation("Products added successfully.");
+            return Ok(isAdded);
+        }
+
+        /// <summary>
+        /// Method to update the product according to product identifier.
+        /// </summary>
+        /// <param name="product">The product instance.</param>
+        /// <param name="productId">The product identifier.</param>
+        /// <returns>The action result of is updated.</returns>
+        [HttpPut]
+        [Route("{productId:int}")]
+        public async Task<IActionResult> Update([FromBody] Product product, [FromQuery] int productId)
+        {
+            if (product == null || productId <= 0)
+            {
+                _logger.LogError(Constants.INVALIDINPUTPARAMETER);
+                throw new ArgumentNullException();
+            }
+
+            var isUpdated = await _productManager.UpdateProduct(product, productId);
+            if (isUpdated)
+                _logger.LogInformation($"Products updated successfully with specified product identifier:{productId}");
+            return Ok(isUpdated);
         }
     }
 }

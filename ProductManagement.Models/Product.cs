@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ProductManagement.Models
 {
     public class Product
     {
+        public int Id { get; set; }
+
+        [Required]
         public string ProductCode { get; set; }
 
+        [Required]
         public string Name { get; set; }
 
         public int? Quantity { get; set; }
@@ -20,6 +20,6 @@ namespace ProductManagement.Models
 
         public string Image { get; set; }
 
-        public virtual SubCategory SubCategory { get; set; }
+        public SubCategory SubCategory { get; set; }
     }
 }

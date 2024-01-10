@@ -37,6 +37,10 @@ namespace ProductManagement.Repository
                         Quantity = item.Quantity,
                         Description = item.Description,
                         Image = item.Image,
+                        SubCategory = new SubCategory()
+                        {
+                            Id = (int)item?.SubCategoryId
+                        }
                     });
                 });
             }
@@ -67,6 +71,11 @@ namespace ProductManagement.Repository
                         Quantity = item.Quantity,
                         Description = item.Description,
                         Image = item.Image,
+                        Id = item.Id,
+                        SubCategory = new SubCategory()
+                        {
+                            Id = (int)item?.SubCategoryId
+                        }
                     });
                 });
             }
@@ -95,6 +104,10 @@ namespace ProductManagement.Repository
                     Quantity = retrievedProduct.Quantity,
                     Description = retrievedProduct.Description,
                     Image = retrievedProduct.Image,
+                    SubCategory = new SubCategory()
+                    {
+                        Id = (int)retrievedProduct?.SubCategoryId
+                    }
                 };
             }
 
@@ -140,7 +153,7 @@ namespace ProductManagement.Repository
                     retrievedProduct.Quantity = product.Quantity;
                     retrievedProduct.Description = product.Description;
                     retrievedProduct.Image = product.Image;
-                    retrievedProduct.SubCategoryId = product.SubCategory.Id;
+                    retrievedProduct.SubCategoryId = product.SubCategory?.Id;
 
                     await context.SaveChangesAsync();
                 }

@@ -92,7 +92,7 @@ namespace ProductManagementService.Controllers
         /// <returns>The action result of is updated.</returns>
         [HttpPut]
         [Route("{productId:int}")]
-        public async Task<IActionResult> Update([FromBody] Product product, [FromQuery] int productId)
+        public async Task<IActionResult> Update([FromBody] Product product, int productId)
         {
             if (product == null || productId <= 0)
             {
